@@ -4,6 +4,8 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
+    const blst = b.dependency("blst", .{});
+
     const ckzg_module = b.addModule("ckzg", .{
         .root_source_file = b.path("bindings/zig/src/root.zig"),
         .target = target,
@@ -19,21 +21,36 @@ pub fn build(b: *std.Build) void {
     });
     lib.linkLibC();
     lib.addIncludePath(b.path("src"));
-    lib.addIncludePath(b.path("blst/bindings"));
+    lib.addIncludePath(blst.path("bindings"));
+
+    const blst_flags: []const []const u8 = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__" };
     switch (target.result.cpu.arch) {
         .aarch64, .x86_64 => {
             lib.addCSourceFiles(.{
-                .root = b.path("."),
-                .files = &.{ "blst/src/server.c", "src/ckzg.c" },
-                .flags = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__" },
+                .root = blst.path("."),
+                .files = &.{"src/server.c"},
+                .flags = blst_flags,
             });
-            lib.addAssemblyFile(b.path("blst/build/assembly.S"));
+            lib.addCSourceFiles(.{
+                .root = b.path("."),
+                .files = &.{"src/ckzg.c"},
+                .flags = blst_flags,
+            });
+            lib.addAssemblyFile(blst.path("build/assembly.S"));
         },
-        else => lib.addCSourceFiles(.{
-            .root = b.path("."),
-            .files = &.{ "blst/src/server.c", "src/ckzg.c" },
-            .flags = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__", "-D__BLST_NO_ASM__" },
-        }),
+        else => {
+            const no_asm_flags: []const []const u8 = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__", "-D__BLST_NO_ASM__" };
+            lib.addCSourceFiles(.{
+                .root = blst.path("."),
+                .files = &.{"src/server.c"},
+                .flags = no_asm_flags,
+            });
+            lib.addCSourceFiles(.{
+                .root = b.path("."),
+                .files = &.{"src/ckzg.c"},
+                .flags = no_asm_flags,
+            });
+        },
     }
 
     b.installArtifact(lib);

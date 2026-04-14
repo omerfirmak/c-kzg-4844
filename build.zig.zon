@@ -9,7 +9,12 @@
         "build.zig",
         "build.zig.zon",
         "bindings/zig",
-        "blst",
         "src",
+    },
+    .dependencies = .{
+        .blst = .{
+            .url = "https://github.com/supranational/blst/archive/e7f90de551e8df682f3cc99067d204d8b90d27ad.tar.gz",
+            .hash = "N-V-__8AAN0aOwD_n2xFB-Q0eBNtvIKtGPfGZSVt0DdbmfH2",
+        },
     },
 }
