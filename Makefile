@@ -41,4 +41,10 @@ rust:
 
 .PHONY: zig
 zig:
+	@submodule_hash=$$(git ls-tree HEAD blst | awk '{print $$3}'); \
+	zon_hash=$$(grep -o 'supranational/blst/archive/[0-9a-f]*' build.zig.zon | grep -o '[0-9a-f]*$$'); \
+	if [ "$$submodule_hash" != "$$zon_hash" ]; then \
+		echo "Error: blst submodule ($$submodule_hash) and build.zig.zon ($$zon_hash) are out of sync"; \
+		exit 1; \
+	fi
 	@zig build test
