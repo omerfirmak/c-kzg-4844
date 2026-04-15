@@ -1,8 +1,8 @@
 .{
     .name = .ckzg_4844,
     .version = "0.0.0",
-    .fingerprint = 0x26632123f33724eb,
-    .minimum_zig_version = "0.15.2",
+    .fingerprint = 0x2663212358cfb223,
+    .minimum_zig_version = "0.16.0",
     .paths = .{
         "LICENSE",
         "README.md",

@@ -19,33 +19,33 @@ pub fn build(b: *std.Build) void {
         .linkage = .static,
         .root_module = ckzg_module,
     });
-    lib.linkLibC();
-    lib.addIncludePath(b.path("src"));
-    lib.addIncludePath(blst.path("bindings"));
+    lib.root_module.link_libc = true;
+    lib.root_module.addIncludePath(b.path("src"));
+    lib.root_module.addIncludePath(blst.path("bindings"));
 
     const blst_flags: []const []const u8 = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__" };
     switch (target.result.cpu.arch) {
         .aarch64, .x86_64 => {
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .root = blst.path("."),
                 .files = &.{"src/server.c"},
                 .flags = blst_flags,
             });
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .root = b.path("."),
                 .files = &.{"src/ckzg.c"},
                 .flags = blst_flags,
             });
-            lib.addAssemblyFile(blst.path("build/assembly.S"));
+            lib.root_module.addAssemblyFile(blst.path("build/assembly.S"));
         },
         else => {
             const no_asm_flags: []const []const u8 = &.{ "-O2", "-ffreestanding", "-D__BLST_PORTABLE__", "-D__BLST_NO_ASM__" };
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .root = blst.path("."),
                 .files = &.{"src/server.c"},
                 .flags = no_asm_flags,
             });
-            lib.addCSourceFiles(.{
+            lib.root_module.addCSourceFiles(.{
                 .root = b.path("."),
                 .files = &.{"src/ckzg.c"},
                 .flags = no_asm_flags,
@@ -66,7 +66,7 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    tests.linkLibrary(lib);
+    tests.root_module.linkLibrary(lib);
 
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run Zig binding tests");
