@@ -66,7 +66,6 @@ pub fn build(b: *std.Build) void {
             },
         }),
     });
-    tests.root_module.linkLibrary(lib);
 
     const run_tests = b.addRunArtifact(tests);
     const test_step = b.step("test", "Run Zig binding tests");
