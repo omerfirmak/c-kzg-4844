@@ -28,9 +28,27 @@ zig build test
 
 ## Usage
 
+From the root of your Zig project:
+
+```sh
+zig fetch --save=ckzg https://github.com/ethereum/c-kzg-4844/archive/<commit>.tar.gz
+```
+
+Then wire the `ckzg` module into `build.zig`:
+
+```zig
+const ckzg_dep = b.dependency("ckzg", .{
+    .target = target,
+    .optimize = optimize,
+});
+exe.root_module.addImport("ckzg", ckzg_dep.module("ckzg"));
+```
+
+Then import and initialize:
+
 ```zig
 const ckzg = @import("ckzg");
 
-var settings = try ckzg.Settings.loadTrustedSetupFile("src/trusted_setup.txt", 0);
+var settings = try ckzg.Settings.loadTrustedSetupFile("/path/to/trusted_setup.txt", 0);
 defer settings.deinit();
 ```
