@@ -27,5 +27,16 @@ jobs:
           version: 0.16.0
       - name: Check blst dependency hash
         run: make zig-check
+      - name: Install yq (Linux)
+        if: runner.os == 'Linux'
+        run: sudo snap install yq
+      - name: Install yq (macOS)
+        if: runner.os == 'macOS'
+        run: brew install yq
+      - name: Install yq (Windows)
+        if: runner.os == 'Windows'
+        run: choco install yq
+      - name: Convert test vectors from YAML to JSON
+        run: find tests -name "data.yaml" -exec sh -c 'yq -o=json "$1" > "$(dirname "$1")/data.json"' _ {} \;
       - name: Test
         run: zig build test
