@@ -23,10 +23,13 @@ __pycache__
 
 # nimble build dir
 build/
-.zig-cache/
-zig-out/
 
 # ccls cache dir
 .ccls-cache/
 
 target
+
+#zig
+.zig-cache/
+zig-pkg/
+zig-out/
