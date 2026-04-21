@@ -167,6 +167,17 @@ pub const Settings = struct {
         return ok;
     }
 
+    pub fn computeCells(self: *const Settings, cells: []Cell, blob: *const Blob) !void {
+        try self.ensureLoaded();
+        try expectLen(cells.len, CELLS_PER_EXT_BLOB);
+        try checkRet(c.compute_cells_and_kzg_proofs(
+            sliceMutPtr(Cell, cells),
+            null,
+            blob,
+            &self.inner,
+        ));
+    }
+
     pub fn computeCellsAndKzgProofs(
         self: *const Settings,
         cells: []Cell,
