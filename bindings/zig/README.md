@@ -14,6 +14,14 @@ zig build -Doptimize=ReleaseSafe
 
 ## Test
 
+Convert tests from YAML to JSON (requires [`yq`](https://github.com/mikefarah/yq)):
+
+```sh
+find tests -name "data.yaml" -exec sh -c 'yq -o=json "$1" > "$(dirname "$1")/data.json"' _ {} \;
+```
+
+Then run:
+
 ```sh
 zig build test
 ```
