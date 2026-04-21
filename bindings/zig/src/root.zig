@@ -167,11 +167,14 @@ pub const Settings = struct {
         return ok;
     }
 
-    pub fn computeCells(self: *const Settings, cells: []Cell, blob: *const Blob) !void {
+    pub fn computeCells(
+        self: *const Settings,
+        cells: *[CELLS_PER_EXT_BLOB]Cell,
+        blob: *const Blob,
+    ) !void {
         try self.ensureLoaded();
-        try expectLen(cells.len, CELLS_PER_EXT_BLOB);
         try checkRet(c.compute_cells_and_kzg_proofs(
-            sliceMutPtr(Cell, cells),
+            cells,
             null,
             blob,
             &self.inner,
@@ -180,17 +183,14 @@ pub const Settings = struct {
 
     pub fn computeCellsAndKzgProofs(
         self: *const Settings,
-        cells: []Cell,
-        proofs: []KzgProof,
+        cells: *[CELLS_PER_EXT_BLOB]Cell,
+        proofs: *[CELLS_PER_EXT_BLOB]KzgProof,
         blob: *const Blob,
     ) !void {
         try self.ensureLoaded();
-        try expectLen(cells.len, CELLS_PER_EXT_BLOB);
-        try expectLen(proofs.len, CELLS_PER_EXT_BLOB);
-
         try checkRet(c.compute_cells_and_kzg_proofs(
-            sliceMutPtr(Cell, cells),
-            sliceMutPtr(KzgProof, proofs),
+            cells,
+            proofs,
             blob,
             &self.inner,
         ));
@@ -198,19 +198,17 @@ pub const Settings = struct {
 
     pub fn recoverCellsAndKzgProofs(
         self: *const Settings,
-        recovered_cells: []Cell,
-        recovered_proofs: []KzgProof,
+        recovered_cells: *[CELLS_PER_EXT_BLOB]Cell,
+        recovered_proofs: *[CELLS_PER_EXT_BLOB]KzgProof,
         cell_indices: []const u64,
         cells: []const Cell,
     ) !void {
         try self.ensureLoaded();
-        try expectLen(recovered_cells.len, CELLS_PER_EXT_BLOB);
-        try expectLen(recovered_proofs.len, CELLS_PER_EXT_BLOB);
         if (cell_indices.len != cells.len) return error.LengthMismatch;
 
         try checkRet(c.recover_cells_and_kzg_proofs(
-            sliceMutPtr(Cell, recovered_cells),
-            sliceMutPtr(KzgProof, recovered_proofs),
+            recovered_cells,
+            recovered_proofs,
             sliceConstPtr(u64, cell_indices),
             sliceConstPtr(Cell, cells),
             cell_indices.len,
@@ -259,10 +257,6 @@ fn checkRet(ret: c.C_KZG_RET) !void {
         c.C_KZG_MALLOC => return error.OutOfMemory,
         else => return error.Internal,
     }
-}
-
-fn expectLen(actual: usize, expected: usize) !void {
-    if (actual != expected) return error.LengthMismatch;
 }
 
 fn sliceConstPtr(comptime T: type, slice: []const T) [*c]const T {
